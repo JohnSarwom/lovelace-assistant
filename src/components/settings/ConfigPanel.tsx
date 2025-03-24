@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -56,6 +55,14 @@ const providers = [
     description: 'Command, Embed, etc.',
     isConnected: true,
     isActive: true
+  },
+  {
+    id: 'deepseek',
+    name: 'DeepSeek',
+    logo: '🔍',
+    description: 'DeepSeek Coder, Chat, etc.',
+    isConnected: false,
+    isActive: false
   },
   {
     id: 'huggingface',
@@ -179,6 +186,7 @@ export default function ConfigPanel() {
                         <option value="anthropic">Anthropic</option>
                         <option value="google">Google Vertex AI</option>
                         <option value="cohere">Cohere</option>
+                        <option value="deepseek">DeepSeek</option>
                         <option value="huggingface">Hugging Face</option>
                       </select>
                     </div>
