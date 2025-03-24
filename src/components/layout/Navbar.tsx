@@ -9,8 +9,20 @@ import {
   Settings, 
   Github, 
   Menu, 
-  X
+  X,
+  Share2,
+  Link as LinkIcon,
+  Code
 } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 
 const links = [
   { name: 'Chat', path: '/', icon: MessageSquare },
@@ -20,6 +32,7 @@ const links = [
 
 export default function Navbar() {
   const location = useLocation();
+  const navigate = useNavigate();
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   
@@ -38,6 +51,32 @@ export default function Navbar() {
   useEffect(() => {
     setMobileMenuOpen(false);
   }, [location.pathname]);
+
+  const handleShareOption = (option: string) => {
+    if (option === 'github') {
+      navigate('/integrations');
+      setTimeout(() => {
+        // Focus on GitHub tab
+        const githubTab = document.querySelector('[value="github"]');
+        if (githubTab && 'click' in githubTab) {
+          (githubTab as HTMLElement).click();
+        }
+      }, 100);
+    } else if (option === 'embed') {
+      navigate('/integrations');
+      setTimeout(() => {
+        // Focus on Embed tab
+        const embedTab = document.querySelector('[value="embed"]');
+        if (embedTab && 'click' in embedTab) {
+          (embedTab as HTMLElement).click();
+        }
+      }, 100);
+    } else if (option === 'copy-link') {
+      // Copy current URL to clipboard
+      navigator.clipboard.writeText(window.location.href);
+      toast.success("Link copied to clipboard!");
+    }
+  };
   
   return (
     <header 
@@ -79,6 +118,31 @@ export default function Navbar() {
           })}
           
           <div className="w-px h-6 bg-border mx-2" />
+          
+          {/* Share Button with Dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="icon" className="rounded-full">
+                <Share2 size={18} />
+                <span className="sr-only">Share</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => handleShareOption('github')}>
+                <Github className="mr-2 h-4 w-4" />
+                <span>GitHub Integration</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleShareOption('embed')}>
+                <Code className="mr-2 h-4 w-4" />
+                <span>Generate Embed Code</span>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => handleShareOption('copy-link')}>
+                <LinkIcon className="mr-2 h-4 w-4" />
+                <span>Copy Link</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
           
           <a 
             href="https://github.com/yourusername/lovelace-ai" 
@@ -139,6 +203,16 @@ export default function Navbar() {
                 </Link>
               );
             })}
+            
+            {/* Mobile Share Options */}
+            <Button 
+              variant="outline" 
+              className="w-full justify-start space-x-2"
+              onClick={() => navigate('/integrations')}
+            >
+              <Share2 size={16} />
+              <span>Integrations</span>
+            </Button>
           </div>
           <div className="mt-auto p-4 border-t border-border">
             <a 
