@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -8,6 +9,14 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { 
   Settings, 
   Key, 
@@ -20,8 +29,13 @@ import {
   ExternalLink,
   MessageSquare,
   Palette,
-  Save
+  Save,
+  Edit,
+  EyeOff,
+  Eye,
+  AlertCircle
 } from 'lucide-react';
+import TestProvider from './TestProvider';
 
 const providers = [
   {
@@ -30,7 +44,8 @@ const providers = [
     logo: '🤖',
     description: 'GPT-4o, GPT-4 Turbo, etc.',
     isConnected: true,
-    isActive: true
+    isActive: true,
+    apiKey: 'sk-•••••••••••••••••••••••••••••••'
   },
   {
     id: 'anthropic',
@@ -38,7 +53,8 @@ const providers = [
     logo: '🧠',
     description: 'Claude 3 Opus, Sonnet, etc.',
     isConnected: false,
-    isActive: false
+    isActive: false,
+    apiKey: ''
   },
   {
     id: 'google',
@@ -46,7 +62,8 @@ const providers = [
     logo: '🌐',
     description: 'Gemini Pro, Ultra, etc.',
     isConnected: false,
-    isActive: false
+    isActive: false,
+    apiKey: ''
   },
   {
     id: 'cohere',
@@ -54,7 +71,8 @@ const providers = [
     logo: '🔄',
     description: 'Command, Embed, etc.',
     isConnected: true,
-    isActive: true
+    isActive: true,
+    apiKey: 'co-•••••••••••••••••••••••••••••••'
   },
   {
     id: 'deepseek',
@@ -62,7 +80,8 @@ const providers = [
     logo: '🔍',
     description: 'DeepSeek Coder, Chat, etc.',
     isConnected: false,
-    isActive: false
+    isActive: false,
+    apiKey: ''
   },
   {
     id: 'huggingface',
@@ -70,14 +89,20 @@ const providers = [
     logo: '🤗',
     description: 'Open source models',
     isConnected: false,
-    isActive: false
+    isActive: false,
+    apiKey: ''
   }
 ];
 
 export default function ConfigPanel() {
   const [activeTab, setActiveTab] = useState('providers');
-  const [apiKey, setApiKey] = useState('');
+  const [newApiKey, setNewApiKey] = useState('');
+  const [selectedProvider, setSelectedProvider] = useState('openai');
   const [aiProviders, setAiProviders] = useState(providers);
+  const [editingProvider, setEditingProvider] = useState<string | null>(null);
+  const [editApiKey, setEditApiKey] = useState('');
+  const [showApiKey, setShowApiKey] = useState(false);
+  const [testingProvider, setTestingProvider] = useState<any | null>(null);
   const [customizations, setCustomizations] = useState({
     darkMode: false,
     primaryColor: '#3B82F6',
@@ -109,8 +134,59 @@ export default function ConfigPanel() {
   
   const handleAPIKeySave = () => {
     // Simulate API key saving
-    console.log('API key saved:', apiKey);
-    setApiKey('');
+    if (newApiKey) {
+      console.log('API key saved:', newApiKey);
+      setAiProviders(prev => 
+        prev.map(provider => 
+          provider.id === selectedProvider 
+            ? { 
+                ...provider, 
+                apiKey: newApiKey, 
+                isConnected: true 
+              } 
+            : provider
+        )
+      );
+      setNewApiKey('');
+    }
+  };
+
+  const startEditingProvider = (id: string) => {
+    const provider = aiProviders.find(p => p.id === id);
+    if (provider) {
+      setEditingProvider(id);
+      setEditApiKey(provider.apiKey);
+      setShowApiKey(false);
+    }
+  };
+
+  const saveEditedApiKey = () => {
+    if (editingProvider) {
+      setAiProviders(prev => 
+        prev.map(provider => 
+          provider.id === editingProvider 
+            ? { 
+                ...provider, 
+                apiKey: editApiKey, 
+                isConnected: !!editApiKey
+              } 
+            : provider
+        )
+      );
+      setEditingProvider(null);
+      setEditApiKey('');
+      setShowApiKey(false);
+    }
+  };
+
+  const cancelEditing = () => {
+    setEditingProvider(null);
+    setEditApiKey('');
+    setShowApiKey(false);
+  };
+
+  const testProvider = (provider: any) => {
+    setTestingProvider(provider);
   };
   
   const updateCustomization = (key: string, value: any) => {
@@ -171,8 +247,8 @@ export default function ConfigPanel() {
                         id="api-key"
                         type="password"
                         placeholder="Enter API key"
-                        value={apiKey}
-                        onChange={(e) => setApiKey(e.target.value)}
+                        value={newApiKey}
+                        onChange={(e) => setNewApiKey(e.target.value)}
                         className="mt-1"
                       />
                     </div>
@@ -181,6 +257,8 @@ export default function ConfigPanel() {
                       <select 
                         id="provider" 
                         className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 mt-1"
+                        value={selectedProvider}
+                        onChange={(e) => setSelectedProvider(e.target.value)}
                       >
                         <option value="openai">OpenAI</option>
                         <option value="anthropic">Anthropic</option>
@@ -193,7 +271,7 @@ export default function ConfigPanel() {
                     <div className="flex items-end">
                       <Button 
                         onClick={handleAPIKeySave}
-                        disabled={!apiKey}
+                        disabled={!newApiKey}
                         className="mb-[1px]"
                       >
                         Add Key
@@ -221,6 +299,59 @@ export default function ConfigPanel() {
                         <div>
                           <h4 className="font-medium">{provider.name}</h4>
                           <p className="text-sm text-muted-foreground">{provider.description}</p>
+                          {provider.isConnected && (
+                            <div className="mt-1">
+                              {editingProvider === provider.id ? (
+                                <div className="flex gap-2 items-center">
+                                  <Input
+                                    type={showApiKey ? "text" : "password"}
+                                    value={editApiKey}
+                                    onChange={(e) => setEditApiKey(e.target.value)}
+                                    className="text-xs h-8"
+                                    placeholder="Enter API key"
+                                  />
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8"
+                                    onClick={() => setShowApiKey(!showApiKey)}
+                                  >
+                                    {showApiKey ? <EyeOff size={16} /> : <Eye size={16} />}
+                                  </Button>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-8"
+                                    onClick={saveEditedApiKey}
+                                  >
+                                    Save
+                                  </Button>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-8"
+                                    onClick={cancelEditing}
+                                  >
+                                    Cancel
+                                  </Button>
+                                </div>
+                              ) : (
+                                <div className="flex items-center gap-2">
+                                  <div className="text-xs text-muted-foreground font-mono">
+                                    {provider.apiKey}
+                                  </div>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-6 w-6"
+                                    onClick={() => startEditingProvider(provider.id)}
+                                  >
+                                    <Edit size={12} />
+                                  </Button>
+                                </div>
+                              )}
+                            </div>
+                          )}
                         </div>
                       </div>
                       
@@ -246,7 +377,8 @@ export default function ConfigPanel() {
                             <span className="text-muted-foreground">•</span>
                             <button 
                               className="text-xs text-primary hover:underline"
-                              onClick={() => {}}
+                              onClick={() => testProvider(provider)}
+                              disabled={!provider.isConnected}
                             >
                               Test
                             </button>
@@ -526,6 +658,15 @@ export default function ConfigPanel() {
           <Button>Save Changes</Button>
         </CardFooter>
       </Card>
+
+      {/* Test Provider Modal */}
+      {testingProvider && (
+        <TestProvider 
+          provider={testingProvider} 
+          onClose={() => setTestingProvider(null)} 
+        />
+      )}
     </div>
   );
 }
+
