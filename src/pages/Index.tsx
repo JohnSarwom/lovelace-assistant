@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import ChatInterface from '@/components/chat/ChatInterface';
-import { MessageSquare, Database, Settings, ArrowRight } from 'lucide-react';
+import { MessageSquare, Database, Settings, ArrowRight, Link } from 'lucide-react';
 
 export default function Index() {
   const navigate = useNavigate();
@@ -27,6 +27,8 @@ export default function Index() {
       navigate('/knowledge');
     } else if (value === 'config') {
       navigate('/config');
+    } else if (value === 'integrations') {
+      navigate('/integrations');
     }
   };
   
@@ -46,7 +48,7 @@ export default function Index() {
           </div>
           
           <Tabs defaultValue="chat" value={activeTab} onValueChange={handleTabChange} className="w-full animate-in">
-            <TabsList className="grid grid-cols-3 max-w-md mx-auto">
+            <TabsList className="grid grid-cols-4 max-w-md mx-auto">
               <TabsTrigger value="chat" className="flex items-center gap-1">
                 <MessageSquare size={14} />
                 <span>Chat</span>
@@ -59,6 +61,10 @@ export default function Index() {
                 <Settings size={14} />
                 <span>Config</span>
               </TabsTrigger>
+              <TabsTrigger value="integrations" className="flex items-center gap-1">
+                <Link size={14} />
+                <span>Integrate</span>
+              </TabsTrigger>
             </TabsList>
             
             <TabsContent value="chat" className="w-full mt-8">
@@ -70,6 +76,10 @@ export default function Index() {
             </TabsContent>
             
             <TabsContent value="config" className="w-full">
+              {/* Empty since we'll navigate to the actual page */}
+            </TabsContent>
+            
+            <TabsContent value="integrations" className="w-full">
               {/* Empty since we'll navigate to the actual page */}
             </TabsContent>
           </Tabs>
